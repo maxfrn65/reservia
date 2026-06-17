@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  password     String
+  name         String
+  role         Role          @default(USER)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Destination {
+  id               String         @id @default(cuid())
+  name             String
+  country          String
+  basePrice        Decimal        @db.Decimal(10, 2)
+  shortDescription String         @db.VarChar(280)
+  description      String         @db.Text
+  images           Image[]
+  availabilities   Availability[]
+  reservations     Reservation[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([country])
+}
+
+model Image {
+  id            String      @id @default(cuid())
+  url           String      @db.Text
+  alt           String?
+  order         Int         @default(0)
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  destinationId String
+
+  @@index([destinationId])
+}
+
+model Availability {
+  id            String        @id @default(cuid())
+  startDate     DateTime
+  endDate       DateTime
+  spotsLeft     Int
+  destination   Destination   @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  destinationId String
+  reservations  Reservation[]
+
+  @@index([destinationId])
+  @@index([startDate])
+}
+
+model Reservation {
+  id             String            @id @default(cuid())
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  destination    Destination       @relation(fields: [destinationId], references: [id])
+  destinationId  String
+  availability   Availability      @relation(fields: [availabilityId], references: [id])
+  availabilityId String
+  numberOfPeople Int
+  totalPrice     Decimal           @db.Decimal(10, 2)
+  status         ReservationStatus @default(CONFIRMED)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([destinationId])
+  @@index([availabilityId])
+}
