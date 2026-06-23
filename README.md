@@ -53,10 +53,13 @@ docker compose up -d
 # 4. Appliquer les migrations Prisma
 npx prisma migrate deploy
 
-# 5. Seeder les données (admin, utilisateur de test, 6 destinations)
+# 5. Générer le client Prisma
+npx prisma generate
+
+# 6. Seeder les données (admin, utilisateur de test, 6 destinations)
 npx prisma db seed
 
-# 6. Lancer le serveur de développement
+# 7. Lancer le serveur de développement
 npm run dev
 ```
 
